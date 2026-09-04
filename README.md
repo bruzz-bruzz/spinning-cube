@@ -56,3 +56,15 @@ python cube.py
 # Render one pretty frame to a text file
 python cube.py --once --width 80 --height 24 --spins 0.25 > cube.txt
 ```
+
+## Demo frames
+
+`demo.py` writes four static frames of the rotating cube to text files:
+
+```
+python demo.py
+# -> demo_front.txt, demo_angle.txt, demo_side.txt, demo_top.txt
+```
+
+These give a quick preview of how the animation looks from different
+angles without having to launch the full animation loop.
