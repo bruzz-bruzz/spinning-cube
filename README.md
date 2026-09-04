@@ -33,3 +33,26 @@ to stdout (Ctrl+C to quit).
 
 * Python 3.8 or newer.
 * No third-party packages.
+
+## Command-line options
+
+```
+python cube.py [--width N] [--height N] [--once] [--spins N]
+```
+
+* `--width N` / `--height N` — force the rendered frame size when running
+  in plain (ANSI) mode. Useful when redirecting output to a file or piping
+  into another program.
+* `--once` — render a single frame and exit, instead of animating.
+* `--spins N` — when used with `--once`, rotate the cube `N` full turns
+  around the Y axis before rendering.
+
+Examples:
+
+```bash
+# Animate full-screen
+python cube.py
+
+# Render one pretty frame to a text file
+python cube.py --once --width 80 --height 24 --spins 0.25 > cube.txt
+```
