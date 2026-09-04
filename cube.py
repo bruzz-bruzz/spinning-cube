@@ -251,7 +251,37 @@ def run_plain(width=80, height=24):
         return
 
 
+def parse_args():
+    import argparse
+    p = argparse.ArgumentParser(
+        description="Render a spinning 3D cube in the terminal using ASCII art.",
+    )
+    p.add_argument("--width", type=int, default=None,
+                   help="Override terminal width (plain mode).")
+    p.add_argument("--height", type=int, default=None,
+                   help="Override terminal height (plain mode).")
+    p.add_argument("--once", action="store_true",
+                   help="Render a single frame and exit (useful for tests).")
+    p.add_argument("--spins", type=float, default=None,
+                   help="With --once, rotate this many full turns around Y.")
+    return p.parse_args()
+
+
 def main():
+    args = parse_args()
+
+    if args.once:
+        # Render a single static frame and exit. Handy for piping to a file
+        # or capturing an image in a test.
+        import math
+        width = args.width or 80
+        height = args.height or 24
+        ay = (args.spins or 0.3) * 2 * math.pi
+        ax = math.radians(20)
+        rows = render(width, height, ax, ay)
+        sys.stdout.write("\n".join(rows) + "\n")
+        return
+
     if _USE_CURSES and sys.stdout.isatty():
         try:
             curses.wrapper(run_curses)
@@ -259,7 +289,9 @@ def main():
             pass
     else:
         try:
-            run_plain()
+            width = args.width or 80
+            height = args.height or 24
+            run_plain(width=width, height=height)
         except KeyboardInterrupt:
             pass
 
