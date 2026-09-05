@@ -9,16 +9,21 @@ Inspired by Andy Sloane's classic `donut.c` from the 2006 demoscene.
 
 * Defines the 8 vertices and 6 faces of a cube.
 * Applies 3D rotation (around the X and Y axes) every frame.
-* Projects 3D points to 2D using simple perspective division.
+* Projects 3D points to 2D using perspective division with
+  aspect-ratio compensation (terminal chars are ~2× taller than wide,
+  so the Y axis is scaled by 0.5 to make the cube look like a cube,
+  not a stretched pillar).
 * Rasterizes each visible face as two triangles using barycentric
-  coordinates and a per-pixel z-buffer.
-* Shades each pixel with a Lambertian dot-product against a fixed
-  directional light, mapping brightness onto a ramp of characters:
-  `.,:;-+=*#%@`.
+  coordinates and a per-pixel z-buffer for proper depth ordering.
 * Uses **per-vertex normal interpolation** so each face shows a smooth
-  gradient from corner to corner instead of a single flat shade.
+  gradient from corner to corner (Gouraud-style shading).
+* Shades each pixel with a Lambertian dot-product against a key
+  directional light, plus a soft fill light from the opposite side,
+  mapped onto a 16-character brightness ramp:
+  ` .'`,:;-+=*#%@$`.
+* **Back-face culling** skips faces pointing away from the camera.
 
-The result is a smoothly-rotating, lit cube that fits in any terminal.
+The result is a smoothly-rotating, lit cube that fills the terminal.
 
 ## Running
 

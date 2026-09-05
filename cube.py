@@ -50,7 +50,7 @@ CUBE_FACES = [
 ]
 
 # Brightness ramp: dim -> bright. More characters = smoother gradient.
-SHADE_CHARS = ".,:;-+=*#%@"
+SHADE_CHARS = " .'`,:;-+=*#%@$"
 
 
 # --------------------------------------------------------------------------- #
@@ -74,17 +74,19 @@ def rotate(point, ax, ay):
 def project(point, width, height, distance=4, cube_size=2.0):
     """Project a 3D point to 2D screen coordinates with simple perspective.
 
-    ``cube_size`` controls how big the cube appears on screen relative to
-    the shorter terminal dimension.
+    Terminal characters are roughly twice as tall as they are wide, so
+    the vertical axis is scaled by 0.5 to make the cube look like a
+    cube rather than a stretched pillar.
     """
     x, y, z = point
     z += distance
     # Perspective: scale by 1/z so farther points are smaller.
     factor = 1.0 / z
-    # Scale so the cube fits the shorter screen dimension with some margin.
-    k = cube_size * min(width, height) * 0.45
+    # Scale so the cube fills the screen with a small margin.
+    k = cube_size * min(width, height * 2) * 0.5
     sx = int(width / 2 + x * factor * k)
-    sy = int(height / 2 - y * factor * k)
+    # Halve the Y scale so the cube isn't vertically squished.
+    sy = int(height / 2 - y * factor * k * 0.5)
     return sx, sy, z
 
 
@@ -163,10 +165,18 @@ def render(width, height, ax, ay):
     zbuf = [[-1e9 for _ in range(width)] for _ in range(height)]
 
     def shade_char(nx, ny, nz):
-        """Map a (normalized) normal to a shade character."""
-        dot = nx * light[0] + ny * light[1] + nz * light[2]
-        # Ambient floor keeps the dark side of the cube from going pitch black.
-        b = 0.15 + 0.85 * max(0.0, dot)
+        """Map a (normalized) normal to a shade character.
+
+        Uses a key light from the upper-right-front plus a softer fill
+        light from the lower-left so the dark side of the cube still has
+        visible detail instead of going pitch black.
+        """
+        # Key light: strong, comes from upper-right-front.
+        key = max(0.0, nx * light[0] + ny * light[1] + nz * light[2])
+        # Fill light: weaker, from the opposite side (lower-left-back).
+        fill = max(0.0, -nx * 0.4 + -ny * 0.4 + -nz * 0.2)
+        # Ambient floor + key + fill.
+        b = 0.18 + 0.65 * key + 0.17 * fill
         idx = min(len(SHADE_CHARS) - 1, int(b * len(SHADE_CHARS)))
         return SHADE_CHARS[idx]
 
