@@ -1,13 +1,15 @@
 ﻿# Spinning Cube & Donut
 
-A 3D ASCII renderer with two scenes and two implementations:
+A 3D ASCII renderer with two scenes and three implementations:
 
-* **🐍 Python** — the original, runs in your terminal. Zero dependencies.
-* **⚛️ Browser** — a Vite + React + TypeScript + TailwindCSS port with
-  a control panel for speed, pause, reset, and scene switching.
+* **🐍 Python (terminal)** — the original, runs in your terminal. Zero
+  dependencies. Two scripts: `cube.py` and `donut.py`.
+* **⚛️ Browser (cube)** — `frontend/` — a Vite + React + TypeScript +
+  TailwindCSS port of the cube, with sliders for speed, pause, reset.
+* **⚛️ Browser (donut)** — `frontend-donut/` — same stack, ported from
+  `donut.py`, with the same controls.
 
-Toggle between the **cube** and the **donut** in the browser header —
-both are rendered in a 16-character brightness ramp:
+Both scenes use a 16-character brightness ramp:
 
 ```
  .'`,:;-+=*#%@$
@@ -39,19 +41,25 @@ Requires Python 3.8+. No third-party packages.
 ### Browser
 
 ```bash
+# Cube
 cd frontend
 npm install
 npm run dev          # http://localhost:5173
-npm run build        # production build to dist/
+
+# Donut
+cd ../frontend-donut
+npm install
+npm run dev          # http://localhost:5173 (different port if 5173 is busy)
 ```
 
-Use the `cube` / `donut` toggle in the header to switch scenes.
+Each frontend is a self-contained Vite project. Run them in two
+separate terminals to view the cube and donut side-by-side.
 
 Requires Node.js 18+ and npm.
 
 ## Features
 
-The browser frontend ships with **two ASCII scenes** — the cube and the
+The renderer ships with **two ASCII scenes** — the cube and the
 donut — both using the same Phong lighting pipeline and the same
 16-character shade ramp:
 
@@ -77,11 +85,10 @@ Both share:
   the camera — a touch of atmospheric perspective.
 * **Aspect-ratio-aware sizing** that fills the available space.
 
-The browser version adds:
+The browser frontends add:
 
 * Live X / Y rotation-speed sliders.
 * `pause`, `reset`, and `help` controls in the header.
-* **cube / donut** toggle to switch scenes.
 * Auto-resizing character grid that fits the browser window via
   `ResizeObserver`.
 * Subtle CRT-style text shadow and a dark terminal theme.
@@ -92,18 +99,30 @@ The browser version adds:
 .
 ├── cube.py                # Python cube renderer + animation loop
 ├── donut.py               # Python donut renderer + animation loop
-├── demo.py                # Writes 4 static demo frames to .txt files
-├── demo_*.txt             # Pre-rendered preview frames
+├── demo.py                # Writes 5 static demo frames to .txt files
+├── demo_*.txt             # Pre-rendered preview frames (cube + donut)
 ├── README.md              # This file
-└── frontend/              # Browser port
+├── frontend/              # Browser port of the cube
+│   ├── src/
+│   │   ├── main.tsx
+│   │   ├── App.tsx
+│   │   ├── CubeView.tsx
+│   │   ├── renderer.ts
+│   │   ├── Github.tsx
+│   │   └── index.css
+│   ├── index.html
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── vite.config.ts
+│   └── tsconfig*.json
+└── frontend-donut/        # Browser port of the donut (same structure)
     ├── src/
-    │   ├── main.tsx       # React entry point
-    │   ├── App.tsx        # Top-level layout (header, controls, scene toggle)
-    │   ├── CubeView.tsx   # Render-loop React component (handles both scenes)
-    │   ├── renderer.ts    # Pure-TS port of cube.py's render()
-    │   ├── donutRenderer.ts # Pure-TS torus renderer (donut.c algorithm)
-    │   ├── Github.tsx     # Header icon + footer credit component
-    │   └── index.css      # Tailwind directives
+    │   ├── main.tsx
+    │   ├── App.tsx
+    │   ├── CubeView.tsx
+    │   ├── donutRenderer.ts
+    │   ├── Github.tsx
+    │   └── index.css
     ├── index.html
     ├── package.json
     ├── tailwind.config.js
@@ -136,11 +155,12 @@ python cube.py --once --width 80 --height 24 --spins 0.25 > cube.txt
 
 ## Demo frames
 
-`demo.py` writes four static frames of the rotating cube to text files:
+`demo.py` writes five static frames to text files — four of the cube
+from different angles, plus one of the donut:
 
 ```
 python demo.py
-# -> demo_front.txt, demo_angle.txt, demo_side.txt, demo_top.txt
+# -> demo_front.txt, demo_angle.txt, demo_side.txt, demo_top.txt, demo_donut.txt
 ```
 
 These give a quick preview of how the animation looks from different

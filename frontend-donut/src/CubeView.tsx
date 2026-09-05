@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { createRenderer, type RendererState } from './renderer'
+import { createDonutRenderer, type DonutRendererState } from './donutRenderer'
 
-export interface CubeViewProps {
+export interface DonutViewProps {
   /** Whether the scene is currently spinning. */
   spinning: boolean
   /** Rotation speed around X axis, in radians/second. */
@@ -15,10 +15,14 @@ export interface CubeViewProps {
 }
 
 /**
- * Renders the spinning cube to a <pre> element using the same ASCII
- * shading ramp as the terminal version. Sizes itself to fit the
- * parent container by measuring it and converting pixel size to
- * character-cell size.
+ * Renders the spinning torus (donut) to a <pre> element using the
+ * same ASCII shading ramp as the terminal version. Sizes itself to
+ * fit the parent container by measuring it and converting pixel size
+ * to character-cell size.
+ *
+ * Named `CubeView` for symmetry with the cube frontend, but renders
+ * a donut. If you need to rename the file, also update the import in
+ * `App.tsx`.
  */
 export function CubeView({
   spinning,
@@ -26,10 +30,10 @@ export function CubeView({
   speedY,
   fixedAngles,
   className,
-}: CubeViewProps) {
+}: DonutViewProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const preRef = useRef<HTMLPreElement | null>(null)
-  const rendererRef = useRef<RendererState | null>(null)
+  const rendererRef = useRef<DonutRendererState | null>(null)
   const anglesRef = useRef({ ax: 0, ay: 0 })
   const lastFrameRef = useRef<number>(0)
   const [size, setSize] = useState({ cols: 80, rows: 24 })
@@ -70,7 +74,7 @@ export function CubeView({
   // Create / resize the renderer when char-cell dimensions change.
   useEffect(() => {
     if (!rendererRef.current) {
-      rendererRef.current = createRenderer(size.cols, size.rows)
+      rendererRef.current = createDonutRenderer(size.cols, size.rows)
     } else {
       rendererRef.current.resize(size.cols, size.rows)
     }

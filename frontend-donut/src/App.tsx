@@ -8,11 +8,13 @@ const GH_REPO = 'https://github.com/bruzz-bruzz/spinning-cube'
 
 export default function App() {
   const [spinning, setSpinning] = useState(true)
-  const [speedX, setSpeedX] = useState(0.4) // rad/sec
-  const [speedY, setSpeedY] = useState(0.6) // rad/sec
+  // Donut spins faster than the cube by default because the torus has
+  // less internal structure to read at slow speeds.
+  const [speedX, setSpeedX] = useState(0.6) // rad/sec
+  const [speedY, setSpeedY] = useState(1.2) // rad/sec
   const [showHelp, setShowHelp] = useState(false)
 
-  // Reset the cube to a nice 3/4 view.
+  // Reset the donut to a nice 3/4 view.
   const handleReset = useCallback(() => {
     setSpinning(false)
     // Trigger a re-render with a fixed angle.
@@ -29,7 +31,7 @@ export default function App() {
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
           <h1 className="text-sm font-semibold tracking-wide">
-            spinning-cube
+            spinning-donut
           </h1>
           <span className="text-xs text-zinc-500 hidden sm:inline">
             · ASCII 3D renderer
@@ -96,19 +98,20 @@ export default function App() {
                 About
               </h2>
               <p className="text-sm text-zinc-300 leading-relaxed mb-3">
-                3D ASCII cube rendered in pure text, ported from the
-                Python terminal version. Uses per-pixel Gouraud shading
-                on its triangulated faces with Phong lighting
-                (key + fill + specular) and a per-pixel z-buffer.
+                3D ASCII donut (parametric torus) rendered in pure text,
+                ported from the Python terminal version. Uses analytic
+                per-pixel normals on a 90×24 mesh with Phong lighting
+                (key + fill + specular) and a per-pixel z-buffer for
+                correct occlusion.
               </p>
               <p className="text-sm text-zinc-300 leading-relaxed mb-4">
                 Drag the sliders to change the rotation speed, hit
                 <span className="text-emerald-300 mx-1">pause</span>
                 to freeze the scene, or
                 <span className="text-emerald-300 mx-1">reset</span>
-                for the default 3/4 view. The donut version lives in
-                the sibling
-                <span className="text-emerald-300 mx-1">frontend-donut/</span>
+                for the default 3/4 view. The cube version lives in the
+                sibling
+                <span className="text-emerald-300 mx-1">frontend/</span>
                 folder.
               </p>
               <h3 className="text-sm font-semibold text-zinc-200 mb-2">

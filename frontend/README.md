@@ -9,6 +9,9 @@ the same `SHADE_CHARS` ramp, the same Phong-style lighting (key + fill
 the same z-buffer for proper face overlap. It just runs in a
 `<pre>` element in the browser.
 
+The donut version of this app lives in the sibling `frontend-donut/`
+folder.
+
 ## Quick start
 
 ```bash
