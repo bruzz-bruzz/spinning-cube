@@ -3,6 +3,9 @@
 An iconic 3D spinning cube rendered in pure Python using ASCII characters.
 No third-party libraries, no graphics libraries — just the standard library.
 
+A **Vite + React + TypeScript + TailwindCSS** port is also available in
+[`frontend/`](./frontend/) that runs the same renderer in the browser.
+
 Inspired by Andy Sloane's classic `donut.c` from the 2006 demoscene.
 
 ## What it does
@@ -40,6 +43,27 @@ to stdout (Ctrl+C to quit).
 
 * Python 3.8 or newer.
 * No third-party packages.
+
+## Frontend (browser)
+
+A web port lives in [`frontend/`](./frontend/). It uses the same ASCII
+renderer, ported line-by-line to TypeScript, and renders to a `<pre>`
+element styled with TailwindCSS.
+
+```bash
+cd frontend
+npm install
+npm run dev      # opens http://localhost:5173
+npm run build    # production build to dist/
+```
+
+Features:
+
+* Same Phong-style lighting, per-vertex normals, and z-buffer as the
+  Python version.
+* Live X / Y rotation speed sliders in the footer.
+* `pause`, `reset`, and `help` buttons in the header.
+* Auto-resizes the character grid to fit the browser window.
 
 ## Command-line options
 

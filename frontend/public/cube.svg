@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Simple 3D cube icon -->
+  <g stroke="currentColor" stroke-width="3" stroke-linejoin="round" fill="none">
+    <!-- Top face -->
+    <polygon points="50,15 85,30 50,45 15,30" fill="#fbbf24"/>
+    <!-- Left face -->
+    <polygon points="15,30 50,45 50,85 15,70" fill="#3b82f6"/>
+    <!-- Right face -->
+    <polygon points="85,30 50,45 50,85 85,70" fill="#ef4444"/>
+  </g>
+</svg>

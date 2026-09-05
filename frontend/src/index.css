@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    @apply bg-terminal-bg text-terminal-fg font-mono antialiased;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  /* The ASCII cube output. Uses a monospace font and tight line-height
+     so each character cell is a clean square, giving a true 3D look. */
+  .cube-output {
+    font-family: 'JetBrains Mono', 'Fira Code', Menlo, Monaco, Consolas, monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "calt" 0;
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    /* Tabular figures keep every char cell the same width. */
+    font-variant-numeric: tabular-nums;
+    /* Subtle glow so the cube looks like it's lit by a CRT. */
+    text-shadow: 0 0 4px rgba(228, 228, 231, 0.15);
+    user-select: none;
+  }
+}
+
+/* Custom range slider styling for the control panel. */
+input[type="range"] {
+  @apply h-1.5 bg-zinc-800 rounded-full appearance-none cursor-pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  @apply appearance-none w-3.5 h-3.5 bg-emerald-400 rounded-full cursor-pointer;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
+}
+
+input[type="range"]::-moz-range-thumb {
+  @apply w-3.5 h-3.5 bg-emerald-400 rounded-full cursor-pointer border-0;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
+}
