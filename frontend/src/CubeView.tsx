@@ -1,8 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
-import { createRenderer, type RendererState } from './renderer'
+import {
+  createRenderer as createCubeRenderer,
+  type RendererState as CubeRendererState,
+} from './renderer'
+import {
+  createDonutRenderer,
+  type DonutRendererState,
+} from './donutRenderer'
+
+/** Which shape to render. */
+export type SceneMode = 'cube' | 'donut'
 
 export interface CubeViewProps {
-  /** Whether the cube is currently spinning. */
+  /** Which shape to render. */
+  mode: SceneMode
+  /** Whether the scene is currently spinning. */
   spinning: boolean
   /** Rotation speed around X axis, in radians/second. */
   speedX: number
@@ -15,12 +27,13 @@ export interface CubeViewProps {
 }
 
 /**
- * Renders the spinning cube to a <pre> element using the same ASCII
- * shading ramp as the terminal version. Sizes itself to fit the parent
- * container by measuring it and converting pixel size to character-cell
- * size (assumes a ~7px-wide × 14px-tall monospace cell at default font).
+ * Renders the spinning scene (cube or donut) to a <pre> element using
+ * the same ASCII shading ramp as the terminal version. Sizes itself
+ * to fit the parent container by measuring it and converting pixel
+ * size to character-cell size.
  */
 export function CubeView({
+  mode,
   spinning,
   speedX,
   speedY,
@@ -29,7 +42,10 @@ export function CubeView({
 }: CubeViewProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const preRef = useRef<HTMLPreElement | null>(null)
-  const rendererRef = useRef<RendererState | null>(null)
+  // Two renderers, one per mode. We keep both alive so switching
+  // modes is instant (no allocation cost).
+  const cubeRendererRef = useRef<CubeRendererState | null>(null)
+  const donutRendererRef = useRef<DonutRendererState | null>(null)
   const anglesRef = useRef({ ax: 0, ay: 0 })
   const lastFrameRef = useRef<number>(0)
   const [size, setSize] = useState({ cols: 80, rows: 24 })
@@ -40,10 +56,6 @@ export function CubeView({
     if (!container) return
 
     const measure = () => {
-      // Approximate char-cell size in pixels for a typical monospace font.
-      // 0.6em wide, 1.2em tall is a reasonable default for JetBrains Mono
-      // and similar fonts. We measure the <pre> indirectly by setting a
-      // probe char and reading its computed font size.
       const probe = document.createElement('span')
       probe.style.fontFamily =
         "'JetBrains Mono', 'Fira Code', Menlo, Monaco, Consolas, monospace"
@@ -59,7 +71,7 @@ export function CubeView({
       const charHeight = rect.height || 16.8
 
       const rect2 = container.getBoundingClientRect()
-      // Leave a tiny margin so the cube never touches the edge.
+      // Leave a tiny margin so the scene never touches the edge.
       const cols = Math.max(20, Math.floor((rect2.width - 8) / charWidth))
       const rows = Math.max(10, Math.floor((rect2.height - 8) / charHeight))
       setSize({ cols, rows })
@@ -71,12 +83,17 @@ export function CubeView({
     return () => observer.disconnect()
   }, [])
 
-  // Create / resize renderer when char-cell dimensions change.
+  // Create / resize BOTH renderers when char-cell dimensions change.
   useEffect(() => {
-    if (!rendererRef.current) {
-      rendererRef.current = createRenderer(size.cols, size.rows)
+    if (!cubeRendererRef.current) {
+      cubeRendererRef.current = createCubeRenderer(size.cols, size.rows)
     } else {
-      rendererRef.current.resize(size.cols, size.rows)
+      cubeRendererRef.current.resize(size.cols, size.rows)
+    }
+    if (!donutRendererRef.current) {
+      donutRendererRef.current = createDonutRenderer(size.cols, size.rows)
+    } else {
+      donutRendererRef.current.resize(size.cols, size.rows)
     }
   }, [size.cols, size.rows])
 
@@ -98,7 +115,8 @@ export function CubeView({
         anglesRef.current.ay = fixedAngles.ay
       }
 
-      const renderer = rendererRef.current
+      const renderer =
+        mode === 'donut' ? donutRendererRef.current : cubeRendererRef.current
       if (renderer && preRef.current) {
         const rows = renderer.render(
           anglesRef.current.ax,
@@ -110,7 +128,7 @@ export function CubeView({
     }
     rafId = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(rafId)
-  }, [spinning, speedX, speedY, fixedAngles])
+  }, [mode, spinning, speedX, speedY, fixedAngles])
 
   return (
     <div

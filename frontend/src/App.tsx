@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { CubeView } from './CubeView'
+import { CubeView, type SceneMode } from './CubeView'
 import Github from './Github'
 
 // GitHub user + repo for the attribution footer / header link.
@@ -7,6 +7,7 @@ const GH_USER = 'bruzz-bruzz'
 const GH_REPO = 'https://github.com/bruzz-bruzz/spinning-cube'
 
 export default function App() {
+  const [mode, setMode] = useState<SceneMode>('cube')
   const [spinning, setSpinning] = useState(true)
   const [speedX, setSpeedX] = useState(0.4) // rad/sec
   const [speedY, setSpeedY] = useState(0.6) // rad/sec
@@ -34,6 +35,31 @@ export default function App() {
           <span className="text-xs text-zinc-500 hidden sm:inline">
             · ASCII 3D renderer
           </span>
+          {/* Scene-mode toggle (cube / donut). */}
+          <div className="ml-3 flex items-center rounded border border-zinc-700 overflow-hidden text-[11px] font-mono">
+            <button
+              onClick={() => setMode('cube')}
+              aria-pressed={mode === 'cube'}
+              className={`px-2 py-0.5 transition-colors ${
+                mode === 'cube'
+                  ? 'bg-emerald-400/15 text-emerald-300'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              cube
+            </button>
+            <button
+              onClick={() => setMode('donut')}
+              aria-pressed={mode === 'donut'}
+              className={`px-2 py-0.5 border-l border-zinc-700 transition-colors ${
+                mode === 'donut'
+                  ? 'bg-emerald-400/15 text-emerald-300'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              donut
+            </button>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -76,6 +102,7 @@ export default function App() {
       {/* Main cube area */}
       <main className="flex-1 relative min-h-0">
         <CubeView
+          mode={mode}
           spinning={spinning && angles === null}
           speedX={speedX}
           speedY={speedY}
@@ -96,15 +123,21 @@ export default function App() {
                 About
               </h2>
               <p className="text-sm text-zinc-300 leading-relaxed mb-3">
-                A 3D spinning cube rendered in pure ASCII, ported from the
-                Python terminal version. Each frame rasterises the visible
-                faces with per-pixel Gouraud shading, Phong-style lighting
-                (key + fill + specular), and a depth buffer.
+                3D ASCII scenes rendered in pure text, ported from the
+                Python terminal version. The cube uses per-pixel Gouraud
+                shading on its triangulated faces; the donut uses analytic
+                normals on a parametric torus. Both share the same Phong
+                lighting (key + fill + specular) and depth buffer.
               </p>
               <p className="text-sm text-zinc-300 leading-relaxed mb-4">
-                Drag the sliders to change the rotation speed, hit
+                Use the
+                <span className="text-emerald-300 mx-1">cube</span>
+                /
+                <span className="text-emerald-300 mx-1">donut</span>
+                toggle in the header to switch scenes. Drag the sliders to
+                change the rotation speed, hit
                 <span className="text-emerald-300 mx-1">pause</span>
-                to freeze the cube, or
+                to freeze the scene, or
                 <span className="text-emerald-300 mx-1">reset</span>
                 for the default 3/4 view.
               </p>

@@ -1,14 +1,13 @@
-﻿# Spinning Cube
+﻿# Spinning Cube & Donut
 
-An iconic 3D spinning cube rendered in **pure ASCII characters**, with
-two implementations sharing the same shading algorithm:
+A 3D ASCII renderer with two scenes and two implementations:
 
 * **🐍 Python** — the original, runs in your terminal. Zero dependencies.
 * **⚛️ Browser** — a Vite + React + TypeScript + TailwindCSS port with
-  a control panel for speed, pause, and reset.
+  a control panel for speed, pause, reset, and scene switching.
 
-Both produce the same lit, smoothly-rotating cube from a 16-character
-brightness ramp:
+Toggle between the **cube** and the **donut** in the browser header —
+both are rendered in a 16-character brightness ramp:
 
 ```
  .'`,:;-+=*#%@$
@@ -21,12 +20,19 @@ Inspired by Andy Sloane's classic `donut.c` from the 2006 demoscene.
 ### Python (terminal)
 
 ```bash
-python cube.py
+python cube.py     # spinning cube
+python donut.py    # spinning donut
 ```
 
 * **Linux / macOS** — uses `curses` for smooth full-screen animation
   (press `q` or `ESC` to quit).
 * **Windows** — uses ANSI escape sequences (Ctrl+C to quit).
+
+Both scripts accept the same options:
+
+* `--width N` / `--height N` — override the buffer size (plain mode).
+* `--once` — render a single static frame and exit.
+* `--spins K` — with `--once`, rotate K full turns around the Y axis.
 
 Requires Python 3.8+. No third-party packages.
 
@@ -39,32 +45,43 @@ npm run dev          # http://localhost:5173
 npm run build        # production build to dist/
 ```
 
+Use the `cube` / `donut` toggle in the header to switch scenes.
+
 Requires Node.js 18+ and npm.
 
 ## Features
 
-Both versions share the same render pipeline:
+The browser frontend ships with **two ASCII scenes** — the cube and the
+donut — both using the same Phong lighting pipeline and the same
+16-character shade ramp:
+
+**Cube** — The same renderer as the Python version. Each visible face
+is triangulated and rasterised with a per-pixel z-buffer and Gouraud
+per-vertex normal interpolation. Back-face culled so only the three
+front faces are drawn.
+
+**Donut** — A parametric torus (major radius 1.0, tube radius 0.4)
+rendered using the classic donut.c algorithm: a ring of 90 points swept
+through 24 angular steps, with analytic surface normals. Same z-buffer,
+shading, and Phong lighting as the cube.
+
+Both share:
 
 * **3D rotation** around the X and Y axes every frame.
-* **Perspective projection** with aspect-ratio compensation — terminal
-  characters are ~2× taller than wide, so the Y axis is scaled by 0.5
-  to make the cube look like a cube instead of a stretched pillar.
-* **Per-vertex normal interpolation** (Gouraud-style) so each face shows
-  a smooth gradient from corner to corner.
-* **Phong-style lighting**: a key directional light (`(0.5, 0.5, -1.0)`),
-  a softer fill from the opposite side, and a tight specular highlight
-  (`keyDot ** 8`) for that shiny plastic look.
-* **Per-pixel z-buffer** for correct face overlap, plus **back-face
-  culling** to skip faces pointing away from the camera.
-* **Depth falloff** that gently dims the cube as it moves away from the
-  camera — a touch of atmospheric perspective.
-* **Aspect-ratio-aware sizing** that fills the available space
-  (terminal rows × cols, or browser window) without distorting the cube.
+* **Perspective projection** with aspect-ratio compensation (terminal
+  characters are ~2× taller than wide, so the Y axis is scaled by 0.5).
+* **Phong-style lighting**: a key directional light, a softer fill from
+  the opposite side, and a tight specular highlight (`keyDot ** 8`).
+* **Per-pixel z-buffer** for correct surface overlap and occlusion.
+* **Depth falloff** that gently dims the scene as it moves away from
+  the camera — a touch of atmospheric perspective.
+* **Aspect-ratio-aware sizing** that fills the available space.
 
 The browser version adds:
 
 * Live X / Y rotation-speed sliders.
 * `pause`, `reset`, and `help` controls in the header.
+* **cube / donut** toggle to switch scenes.
 * Auto-resizing character grid that fits the browser window via
   `ResizeObserver`.
 * Subtle CRT-style text shadow and a dark terminal theme.
@@ -73,17 +90,20 @@ The browser version adds:
 
 ```
 .
-├── cube.py             # Python renderer + animation loop
-├── demo.py             # Writes 4 static demo frames to .txt files
-├── demo_*.txt          # Pre-rendered preview frames
-├── README.md           # This file
-└── frontend/           # Browser port
+├── cube.py                # Python cube renderer + animation loop
+├── donut.py               # Python donut renderer + animation loop
+├── demo.py                # Writes 4 static demo frames to .txt files
+├── demo_*.txt             # Pre-rendered preview frames
+├── README.md              # This file
+└── frontend/              # Browser port
     ├── src/
-    │   ├── main.tsx    # React entry point
-    │   ├── App.tsx     # Top-level layout
-    │   ├── CubeView.tsx# Render-loop React component
-    │   ├── renderer.ts # Pure-TS port of cube.py's render()
-    │   └── index.css   # Tailwind directives
+    │   ├── main.tsx       # React entry point
+    │   ├── App.tsx        # Top-level layout (header, controls, scene toggle)
+    │   ├── CubeView.tsx   # Render-loop React component (handles both scenes)
+    │   ├── renderer.ts    # Pure-TS port of cube.py's render()
+    │   ├── donutRenderer.ts # Pure-TS torus renderer (donut.c algorithm)
+    │   ├── Github.tsx     # Header icon + footer credit component
+    │   └── index.css      # Tailwind directives
     ├── index.html
     ├── package.json
     ├── tailwind.config.js
@@ -129,7 +149,8 @@ angles without having to launch the full animation loop.
 ## Tweaking the renderer
 
 The render algorithm is intentionally compact and easy to play with.
-Knobs to try (in both `cube.py` and `frontend/src/renderer.ts`):
+
+### Cube (`cube.py` and `frontend/src/renderer.ts`)
 
 * **Brightness ramp** — edit the `SHADE_CHARS` string to remap shading.
   More characters give a smoother gradient; fewer give a chunky look.
@@ -142,6 +163,17 @@ Knobs to try (in both `cube.py` and `frontend/src/renderer.ts`):
   how big the cube appears.
 * **Aspect ratio** — the `* 0.5` Y-scale compensates for tall terminal
   characters. Change or remove it for a stretched look.
+
+### Donut (`donut.py` and `frontend/src/donutRenderer.ts`)
+
+* **Torus size** — the `R` and `r` constants control the major (ring)
+  and minor (tube) radii. Try `R=1.5, r=0.25` for a thinner hoop, or
+  `R=0.8, r=0.5` for a fatter shape.
+* **Surface smoothness** — `A_STEPS` and `B_STEPS` control the angular
+  subdivision. Bump to `180/48` for buttery-smooth tubes, or drop to
+  `45/12` for a more pixelated retro look.
+* **Distance** — the `distance` constant in `render()` changes the
+  field of view (smaller = wider-angle / more fisheye).
 
 ## License
 
