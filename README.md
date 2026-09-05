@@ -6,9 +6,10 @@ A 3D ASCII renderer with two scenes and three implementations:
   dependencies. Two scripts: `cube.py` and `donut.py`.
 * **⚛️ Browser (cube)** — `frontend/` — a Vite + React + TypeScript +
   TailwindCSS port of the cube, with sliders for speed, pause, reset.
+  https://frontend-eta-rust-97.vercel.app/
 * **⚛️ Browser (donut)** — `frontend-donut/` — same stack, ported from
   `donut.py`, with the same controls.
-
+  https://frontend-donut.vercel.app/
 Both scenes use a 16-character brightness ramp:
 
 ```
