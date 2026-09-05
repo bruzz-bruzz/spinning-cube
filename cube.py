@@ -50,6 +50,9 @@ CUBE_FACES = [
 ]
 
 # Brightness ramp: dim -> bright. More characters = smoother gradient.
+# The end of the ramp has dense, "heavy" characters (%, #, @, $) that
+# read as bright even at small font sizes, while the start is sparse
+# (space, period, comma, apostrophe) for subtle dark areas.
 SHADE_CHARS = " .'`,:;-+=*#%@$"
 
 
@@ -83,7 +86,7 @@ def project(point, width, height, distance=4, cube_size=2.0):
     # Perspective: scale by 1/z so farther points are smaller.
     factor = 1.0 / z
     # Scale so the cube fills the screen with a small margin.
-    k = cube_size * min(width, height * 2) * 0.5
+    k = cube_size * min(width, height * 2) * 0.55
     sx = int(width / 2 + x * factor * k)
     # Halve the Y scale so the cube isn't vertically squished.
     sy = int(height / 2 - y * factor * k * 0.5)
@@ -164,20 +167,27 @@ def render(width, height, ax, ay):
     buf = [[" " for _ in range(width)] for _ in range(height)]
     zbuf = [[-1e9 for _ in range(width)] for _ in range(height)]
 
-    def shade_char(nx, ny, nz):
-        """Map a (normalized) normal to a shade character.
+    def shade_char(nx, ny, nz, z):
+        """Map a (normalized) normal and depth to a shade character.
 
         Uses a key light from the upper-right-front plus a softer fill
         light from the lower-left so the dark side of the cube still has
-        visible detail instead of going pitch black.
+        visible detail instead of going pitch black. Also adds a small
+        specular highlight where the surface faces the key light directly.
         """
         # Key light: strong, comes from upper-right-front.
-        key = max(0.0, nx * light[0] + ny * light[1] + nz * light[2])
-        # Fill light: weaker, from the opposite side (lower-left-back).
+        key_dot = nx * light[0] + ny * light[1] + nz * light[2]
+        key = max(0.0, key_dot)
+        # Fill light: weaker, from the opposite side.
         fill = max(0.0, -nx * 0.4 + -ny * 0.4 + -nz * 0.2)
-        # Ambient floor + key + fill.
-        b = 0.18 + 0.65 * key + 0.17 * fill
-        idx = min(len(SHADE_CHARS) - 1, int(b * len(SHADE_CHARS)))
+        # Specular highlight: small bright spot where the surface faces
+        # the light most directly. This makes the cube look "shiny".
+        specular = key_dot ** 8 if key_dot > 0 else 0
+        # Distance falloff: pixels farther from the camera are slightly dimmer.
+        depth_factor = 1.0 - max(0.0, min(0.15, (z - 3) * 0.04))
+        # Ambient floor + key + fill + specular.
+        b = (0.16 + 0.62 * key + 0.15 * fill + 0.18 * specular) * depth_factor
+        idx = min(len(SHADE_CHARS) - 1, max(0, int(b * len(SHADE_CHARS))))
         return SHADE_CHARS[idx]
 
     # Rasterize a triangle with per-pixel shading (Gouraud-style).
@@ -217,7 +227,7 @@ def render(width, height, ax, ay):
                     if nlen < 1e-6:
                         continue
                     zbuf[y][x] = z
-                    buf[y][x] = shade_char(nx / nlen, ny / nlen, nz / nlen)
+                    buf[y][x] = shade_char(nx / nlen, ny / nlen, nz / nlen, z)
 
     for face, vns in face_info:
         p = [projected[i] for i in face]
